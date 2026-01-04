@@ -22,6 +22,10 @@ inputs:
   version:
     description: 'Semantic version of the package'
     required: true
+  website:
+    description: 'URL of the package''s website'
+    required: false
+    default: ''
   token:
     description: 'Authentication token used by the service account'
     required: true
