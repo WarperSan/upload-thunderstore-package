@@ -1,0 +1,10 @@
+name: 'Upload Package to Thunderstore'
+description: 'Builds, validates, packages and publishes a Thunderstore pacakge'
+author: 'WarperSan'
+branding:
+  icon: 'package'
+  color: 'purple'
+
+# inputs
+# outputs
+# runs
