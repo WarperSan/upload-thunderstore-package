@@ -12,6 +12,10 @@ inputs:
   team:
     description: 'Name of team publishing the package'
     required: true
+  categories:
+    description: 'List of slugs for each category the package belongs to'
+    required: false
+    default: ''
   name:
     description: 'Name of the package'
     required: true
@@ -22,6 +26,10 @@ inputs:
   version:
     description: 'Semantic version of the package'
     required: true
+  dependencies:
+    description: 'List of dependency strings for each package needed by the package'
+    required: false
+    default: ''
   website:
     description: 'URL of the package''s website'
     required: false
