@@ -6,6 +6,15 @@ branding:
   color: 'purple'
 
 inputs:
+  community:
+    description: 'Slug of the community to publish the package to'
+    required: true
+  team:
+    description: 'Name of team publishing the package'
+    required: true
+  version:
+    description: 'Semantic version of the package'
+    required: true
   token:
     description: 'Authentication token used by the service account'
     required: true
