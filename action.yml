@@ -12,6 +12,13 @@ inputs:
   team:
     description: 'Name of team publishing the package'
     required: true
+  name:
+    description: 'Name of the package'
+    required: true
+  description:
+    description: 'Short description of the package'
+    required: false
+    default: ''
   version:
     description: 'Semantic version of the package'
     required: true
