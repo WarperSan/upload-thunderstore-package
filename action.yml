@@ -26,6 +26,10 @@ inputs:
     description: 'URL of the package''s website'
     required: false
     default: ''
+  has-nsfw:
+    description: 'Marks the package as "Not Safe For Work" (NSFW)'
+    required: false
+    default: false
   token:
     description: 'Authentication token used by the service account'
     required: true
