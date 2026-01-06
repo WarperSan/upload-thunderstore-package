@@ -147,7 +147,7 @@ runs:
       shell: bash
       run: |
         OPTIONS=()
-  
+        
         if [ -n "$REPOSITORY" ]; then
           OPTIONS+=('--repository')
           OPTIONS+=("$REPOSITORY")
@@ -192,7 +192,7 @@ runs:
         if [ -n "$CATEGORIES" ]; then
           IFS=$'\n'
           read -d '' -ra categories <<< "$CATEGORIES"
-          
+        
           for category in "${categories[@]}";
           do
             OPTIONS+=('--categories')
@@ -203,12 +203,11 @@ runs:
         dotnet tool run ThunderPipe publish "$FILE_PATH" "$TEAM" "$COMMUNITY" \
           --token "$TOKEN" \
           "${OPTIONS[@]}"
-      with:
-        file: './${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
-        team: ${{ inputs.team }}
-        community: ${{ inputs.community }}
-        token: ${{ inputs.token }}
-        has-nsfw: ${{ inputs.has-nsfw }}
-        categories: ${{ inputs.categories }}
-        repository: ${{ inputs.repository }}
-
+      env:
+        FILE_PATH: './${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+        TEAM: ${{ inputs.team }}
+        COMMUNITY: ${{ inputs.community }}
+        TOKEN: ${{ inputs.token }}
+        HAS_NSFW: ${{ inputs.has-nsfw }}
+        CATEGORIES: ${{ inputs.categories }}
+        REPOSITORY: ${{ inputs.repository }}
