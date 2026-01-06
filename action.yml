@@ -6,6 +6,7 @@ branding:
   color: 'purple'
 
 inputs:
+  # Required inputs
   community:
     description: 'Slug of the community to publish the package to'
     required: true
