@@ -38,9 +38,17 @@ inputs:
     description: 'Marks the package as "Not Safe For Work" (NSFW)'
     required: false
     default: false
+
+  # Secrets
   token:
     description: 'Authentication token used by the service account'
     required: true
+
+  # Options
+  repository:
+    description: 'URL of the hosting server'
+    required: false
+    default: 'https://thunderstore.io'
 
 # outputs
 # runs
