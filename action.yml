@@ -69,4 +69,146 @@ inputs:
       ./LICENSE?(.txt|.md)
 
 # outputs
-# runs
+
+runs: 
+  using: 'composite'
+  steps:
+    - name: Install ThunderPipe
+      shell: bash
+      run: dotnet tool install ThunderPipe
+
+    - name: Build Package
+      shell: bash
+      run: dotnet build --no-restore -c "$CONFIGURATION"
+      env:
+        CONFIGURATION: ${{ env.DOTNET_CONFIGURATION }}
+
+    - name: Test Package
+      shell: bash
+      run: dotnet test --no-restore -c "$CONFIGURATION"
+      env:
+        CONFIGURATION: ${{ env.DOTNET_CONFIGURATION }}
+
+    - name: Copy Build Files
+      shell: bash
+      run: |
+        mkdir -p "$DESTINATION"
+        
+        for pattern in $FILES; do
+          shopt -s nullglob
+        
+          for file in $pattern; do
+            if [ -f "$file" ]; then
+                cp "$file" "$DESTINATION"
+            fi
+          done
+        done
+      env:
+        FILES: ${{ inputs.files }}
+        DESTINATION: './package/plugins/'
+
+    - name: Copy Package Files
+      shell: bash
+      run: |
+        mkdir -p "$DESTINATION"
+        
+        for pattern in $FILES; do
+          shopt -s nullglob
+        
+          for file in $pattern; do
+            if [ -f "$file" ]; then
+                cp "$file" "$DESTINATION"
+            fi
+          done
+        done
+      env:
+        FILES: ${{ inputs.package-files }}
+        DESTINATION: './package/'
+
+    - name: Create manifest.json
+      shell: bash
+      run: |
+        jq -n \
+          --arg nm "$NAME" \
+          --arg desc "$DESCRIPTION" \
+          --arg ver "$VERSION" \
+          --arg web "$WEBSITE" \
+          --arg deps "$DEPENDENCIES" \
+          '{name: $nm, description: $desc, version_number: $ver, website_url: $web, dependencies: ($deps | split("\n") | map(select(length > 0)))}' \
+          > package/manifest.json
+      env:
+        NAME: ${{ inputs.name }}
+        DESCRIPTION: ${{ inputs.description }}
+        VERSION: ${{ inputs.version }}
+        WEBSITE: ${{ inputs.website }}
+        DEPENDENCIES: ${{ inputs.dependencies }}
+
+    - name: Validate Package
+      shell: bash
+      run: |
+        OPTIONS=()
+  
+        if [ -n "$REPOSITORY" ]; then
+          OPTIONS+=('--repository')
+          OPTIONS+=("$REPOSITORY")
+        fi
+        
+        dotnet tool run ThunderPipe validate "$PACKAGE_FOLDER" \
+          --token "$TOKEN" \
+          --disable-local --enable-remote \
+          --team "$TEAM" \
+          "${OPTIONS[@]}"
+      env:
+        PACKAGE_FOLDER: './package'
+        TOKEN: ${{ inputs.token }}
+        TEAM: ${{ inputs.team }}
+        REPOSITORY: ${{ inputs.repository }}
+
+    - name: Zip Package
+      shell: bash
+      run: |
+        cd "$SOURCE_FOLDER"
+        zip -r "$OUTPUT_FILE" .
+        cd -
+        mv "$SOURCE_FOLDER/$OUTPUT_FILE" "$OUTPUT_FILE"
+      env:
+        SOURCE_FOLDER: './package'
+        OUTPUT_FILE: './${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+
+    - name: Publish Package
+      shell: bash
+      run: |
+        OPTIONS=()
+
+        if [ -n "$REPOSITORY" ]; then
+          OPTIONS+=('--repository')
+          OPTIONS+=("$REPOSITORY")
+        fi
+
+        if [ "$HAS_NSFW" = 'true' ]; then
+          OPTIONS+=('--has-nsfw')
+        fi
+
+        if [ -n "$CATEGORIES" ]; then
+          IFS=$'\n'
+          read -d '' -ra categories <<< "$CATEGORIES"
+          
+          for category in "${categories[@]}";
+          do
+            OPTIONS+=('--categories')
+            OPTIONS+=("$category")
+          done
+        fi
+
+        dotnet tool run ThunderPipe publish "$FILE_PATH" "$TEAM" "$COMMUNITY" \
+          --token "$TOKEN" \
+          "${OPTIONS[@]}"
+      with:
+        file: './${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+        team: ${{ inputs.team }}
+        community: ${{ inputs.community }}
+        token: ${{ inputs.token }}
+        has-nsfw: ${{ inputs.has-nsfw }}
+        categories: ${{ inputs.categories }}
+        repository: ${{ inputs.repository }}
+
