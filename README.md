@@ -23,6 +23,10 @@ jobs:
         with:
           dotnet-version: '9.x'
 
+      - name: Restores Dependencies & Tools
+        shell: bash
+        run: dotnet restore && dotnet tool restore
+
       - uses: WarperSan/upload-thunderstore-package@v1
         with:
           community: 'lethal-company'
