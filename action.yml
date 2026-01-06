@@ -81,13 +81,13 @@ runs:
       shell: bash
       run: dotnet build --no-restore -c "$CONFIGURATION"
       env:
-        CONFIGURATION: ${{ env.DOTNET_CONFIGURATION }}
+        CONFIGURATION: ${{ inputs.dotnet-configuration }}
 
     - name: Test Package
       shell: bash
       run: dotnet test --no-restore -c "$CONFIGURATION"
       env:
-        CONFIGURATION: ${{ env.DOTNET_CONFIGURATION }}
+        CONFIGURATION: ${{ inputs.dotnet-configuration }}
 
     - name: Copy Build Files
       shell: bash
