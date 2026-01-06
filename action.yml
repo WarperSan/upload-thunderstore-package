@@ -174,7 +174,7 @@ runs:
         mv "$SOURCE_FOLDER/$OUTPUT_FILE" "$OUTPUT_FILE"
       env:
         SOURCE_FOLDER: '${{ github.workspace }}/package/'
-        OUTPUT_FILE: '${{ github.workspace }}/${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+        OUTPUT_FILE: '${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
 
     - name: Publish Package
       shell: bash
