@@ -40,5 +40,7 @@ jobs:
             Evaisa-LethalLib-1.1.1
             WhiteSpike-Interactive_Terminal_API-1.2.0
           website: 'https://github.com/LethalCompanyModding/ShipInventoryCommunity'
+          files: |
+            ./src/ShipInventoryUpdated/bin/Release/ShipInventoryUpdated.dll
           token: ${{ secrets.THUNDERSTORE_API_TOKEN }}
 ```

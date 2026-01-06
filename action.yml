@@ -19,6 +19,9 @@ inputs:
   version:
     description: 'Semantic version of the package'
     required: true
+  files:
+    description: 'List of files needed by the package'
+    required: true
 
   # Optional inputs
   categories:
@@ -56,6 +59,14 @@ inputs:
     description: 'URL of the hosting server'
     required: false
     default: 'https://thunderstore.io'
+  package-files:
+    description: 'List of files for the listing page'
+    required: false
+    default: |
+      ./icon.png
+      ./README.md
+      ./CHANGELOG.md
+      ./LICENSE?(.txt|.md)
 
 # outputs
 # runs
