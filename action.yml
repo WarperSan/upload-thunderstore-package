@@ -192,7 +192,7 @@ runs:
 
         if [ -n "$CATEGORIES" ]; then
           IFS=$'\n'
-          read -d '' -ra categories <<< "$CATEGORIES"
+          read -ra categories <<< "$CATEGORIES"
         
           for category in "${categories[@]}";
           do
