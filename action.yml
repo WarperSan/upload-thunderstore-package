@@ -12,20 +12,22 @@ inputs:
   team:
     description: 'Name of team publishing the package'
     required: true
+  name:
+    description: 'Name of the package'
+    required: true
+  version:
+    description: 'Semantic version of the package'
+    required: true
+
+  # Optional inputs
   categories:
     description: 'List of slugs for each category the package belongs to'
     required: false
     default: ''
-  name:
-    description: 'Name of the package'
-    required: true
   description:
     description: 'Short description of the package'
     required: false
     default: ''
-  version:
-    description: 'Semantic version of the package'
-    required: true
   dependencies:
     description: 'List of dependency strings for each package needed by the package'
     required: false
@@ -37,7 +39,7 @@ inputs:
   has-nsfw:
     description: 'Marks the package as "Not Safe For Work" (NSFW)'
     required: false
-    default: false
+    default: 'false'
 
   # Secrets
   token:
@@ -45,6 +47,14 @@ inputs:
     required: true
 
   # Options
+  dotnet-version:
+    description: 'SDK version to use'
+    required: false
+    default: '9.x'
+  dotnet-configuration:
+    description: 'Build configuration to use when building and testing the package'
+    required: false
+    default: 'Release'
   repository:
     description: 'URL of the hosting server'
     required: false
