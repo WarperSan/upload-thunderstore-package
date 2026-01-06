@@ -159,7 +159,7 @@ runs:
           --team "$TEAM" \
           "${OPTIONS[@]}"
       env:
-        PACKAGE_FOLDER: './package'
+        PACKAGE_FOLDER: 'package/'
         TOKEN: ${{ inputs.token }}
         TEAM: ${{ inputs.team }}
         REPOSITORY: ${{ inputs.repository }}
