@@ -48,10 +48,6 @@ inputs:
     required: true
 
   # Options
-  dotnet-version:
-    description: 'SDK version to use'
-    required: false
-    default: '9.x'
   dotnet-configuration:
     description: 'Build configuration to use when building and testing the package'
     required: false
