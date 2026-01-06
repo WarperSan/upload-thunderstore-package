@@ -201,7 +201,6 @@ runs:
           done
         fi
 
-        echo "publish"
         dotnet tool run ThunderPipe publish "$FILE_PATH" "$TEAM" "$COMMUNITY" \
           --token "$TOKEN" \
           "${OPTIONS[@]}"
