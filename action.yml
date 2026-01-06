@@ -105,7 +105,7 @@ runs:
         done
       env:
         FILES: ${{ inputs.files }}
-        DESTINATION: './package/plugins/'
+        DESTINATION: '${{ github.workspace }}/package/plugins/'
 
     - name: Copy Package Files
       shell: bash
@@ -123,7 +123,7 @@ runs:
         done
       env:
         FILES: ${{ inputs.package-files }}
-        DESTINATION: './package/'
+        DESTINATION: '${{ github.workspace }}/package/'
 
     - name: Create manifest.json
       shell: bash
@@ -135,13 +135,14 @@ runs:
           --arg web "$WEBSITE" \
           --arg deps "$DEPENDENCIES" \
           '{name: $nm, description: $desc, version_number: $ver, website_url: $web, dependencies: ($deps | split("\n") | map(select(length > 0)))}' \
-          > package/manifest.json
+          > "$OUTPUT_FILE"
       env:
         NAME: ${{ inputs.name }}
         DESCRIPTION: ${{ inputs.description }}
         VERSION: ${{ inputs.version }}
         WEBSITE: ${{ inputs.website }}
         DEPENDENCIES: ${{ inputs.dependencies }}
+        OUTPUT_FILE: '${{ github.workspace }}/package/manifest.json'
 
     - name: Validate Package
       shell: bash
@@ -172,8 +173,8 @@ runs:
         cd -
         mv "$SOURCE_FOLDER/$OUTPUT_FILE" "$OUTPUT_FILE"
       env:
-        SOURCE_FOLDER: './package'
-        OUTPUT_FILE: './${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+        SOURCE_FOLDER: '${{ github.workspace }}/package/'
+        OUTPUT_FILE: '${{ github.workspace }}/${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
 
     - name: Publish Package
       shell: bash
@@ -204,7 +205,7 @@ runs:
           --token "$TOKEN" \
           "${OPTIONS[@]}"
       env:
-        FILE_PATH: './${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+        FILE_PATH: '${{ github.workspace }}/${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
         TEAM: ${{ inputs.team }}
         COMMUNITY: ${{ inputs.community }}
         TOKEN: ${{ inputs.token }}
