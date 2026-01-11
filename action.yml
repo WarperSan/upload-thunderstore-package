@@ -86,51 +86,60 @@ runs:
     - name: Validate Categories
       shell: bash
       run: |
+        echo "::group::Validating categories"
+        
         OPTIONS=()
 
         if [ -n "$CATEGORIES" ]; then
           IFS=$'\n'
-          read -ra categories <<< "$CATEGORIES"
+          read -ra dependencies <<< "$CATEGORIES"
+
+          if [ ${#categories[@]} -gt 0 ]; then
+            for category in "${categories[@]}";
+            do
+              OPTIONS+=('--categories')
+              OPTIONS+=("$category")
+            done
         
-          if [ ${#categories[@]} -eq 0 ]; then
+            dotnet tool run ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}"
+          else
             echo "No category to check."
-            exit 0
           fi
-      
-          for category in "${categories[@]}";
-          do
-            OPTIONS+=('--categories')
-            OPTIONS+=("$category")
-          done
+        else
+          echo "No category to check."
         fi
 
-        dotnet tool run ThunderPipe validate categories "$COMMUNITY" \
-          "${OPTIONS[@]}"
+        echo "::endgroup::"
       env:
         COMMUNITY: ${{ inputs.community }}
         CATEGORIES: ${{ inputs.categories }}
 
-    - name: Validate Community
+    - name: Validate Dependencies
       shell: bash
       run: |
+        echo "::group::Validating dependencies"
+        
         OPTIONS=()
 
         if [ -n "$DEPENDENCIES" ]; then
           IFS=$'\n'
           read -ra dependencies <<< "$DEPENDENCIES"
 
-          if [ ${#dependencies[@]} -eq 0 ]; then
-            echo "No category to check."
-            exit 0
+          if [ ${#dependencies[@]} -gt 0 ]; then
+            for dependency in "${dependencies[@]}";
+            do
+              OPTIONS+=("$dependency")
+            done
+        
+            dotnet tool run ThunderPipe validate dependencies "${OPTIONS[@]}"
+          else
+            echo "No dependency to check."
           fi
-
-          for dependency in "${dependencies[@]}";
-          do
-            OPTIONS+=("$dependency")
-          done
+        else
+          echo "No dependency to check."
         fi
 
-        dotnet tool run ThunderPipe validate dependencies "${OPTIONS[@]}"
+        echo "::endgroup::"
       env:
         DEPENDENCIES: ${{ inputs.dependencies }}
 
