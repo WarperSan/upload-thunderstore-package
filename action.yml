@@ -96,7 +96,7 @@ runs:
 
         if [ -n "$CATEGORIES" ]; then
           IFS=$'\n'
-          read -ra dependencies <<< "$CATEGORIES"
+          read -ra categories <<< "$CATEGORIES"
 
           if [ ${#categories[@]} -gt 0 ]; then
             OPTIONS=()
