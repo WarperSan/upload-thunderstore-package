@@ -77,6 +77,63 @@ runs:
       shell: bash
       run: dotnet tool install ThunderPipe
 
+    - name: Validate Community
+      shell: bash
+      run: dotnet tool run ThunderPipe validate community "$COMMUNITY"
+      env:
+        COMMUNITY: ${{ inputs.community }}
+
+    - name: Validate Categories
+      shell: bash
+      run: |
+        OPTIONS=()
+
+        if [ -n "$CATEGORIES" ]; then
+          IFS=$'\n'
+          read -ra categories <<< "$CATEGORIES"
+        
+          if [ ${#categories[@]} -eq 0 ]; then
+            echo "No category to check."
+            exit 0
+          fi
+      
+          for category in "${categories[@]}";
+          do
+            OPTIONS+=('--categories')
+            OPTIONS+=("$category")
+          done
+        fi
+
+        dotnet tool run ThunderPipe validate categories "$COMMUNITY" \
+          "${OPTIONS[@]}"
+      env:
+        COMMUNITY: ${{ inputs.community }}
+        CATEGORIES: ${{ inputs.categories }}
+
+    - name: Validate Community
+      shell: bash
+      run: |
+        OPTIONS=()
+
+        if [ -n "$DEPENDENCIES" ]; then
+          IFS=$'\n'
+          read -ra dependencies <<< "$DEPENDENCIES"
+
+          if [ ${#dependencies[@]} -eq 0 ]; then
+            echo "No category to check."
+            exit 0
+          fi
+
+          for dependency in "${dependencies[@]}";
+          do
+            OPTIONS+=("$dependency")
+          done
+        fi
+
+        dotnet tool run ThunderPipe validate dependencies "${OPTIONS[@]}"
+      env:
+        DEPENDENCIES: ${{ inputs.dependencies }}
+
     - name: Build Package
       shell: bash
       run: dotnet build --no-restore -c "$CONFIGURATION"
@@ -154,7 +211,7 @@ runs:
           OPTIONS+=("$REPOSITORY")
         fi
         
-        dotnet tool run ThunderPipe validate "$PACKAGE_FOLDER" \
+        dotnet tool run ThunderPipe validate package "$PACKAGE_FOLDER" \
           --token "$TOKEN" \
           --disable-local --enable-remote \
           --team "$TEAM" \
