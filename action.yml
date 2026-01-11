@@ -5,6 +5,210 @@ branding:
   icon: 'package'
   color: 'purple'
 
-# inputs
+inputs:
+  # Required inputs
+  community:
+    description: 'Slug of the community to publish the package to'
+    required: true
+  team:
+    description: 'Name of team publishing the package'
+    required: true
+  name:
+    description: 'Name of the package'
+    required: true
+  version:
+    description: 'Semantic version of the package'
+    required: true
+  files:
+    description: 'List of files needed by the package'
+    required: true
+
+  # Optional inputs
+  categories:
+    description: 'List of slugs for each category the package belongs to'
+    required: false
+    default: ''
+  description:
+    description: 'Short description of the package'
+    required: false
+    default: ''
+  dependencies:
+    description: 'List of dependency strings for each package needed by the package'
+    required: false
+    default: ''
+  website:
+    description: 'URL of the package''s website'
+    required: false
+    default: ''
+  has-nsfw:
+    description: 'Marks the package as "Not Safe For Work" (NSFW)'
+    required: false
+    default: 'false'
+
+  # Secrets
+  token:
+    description: 'Authentication token used by the service account'
+    required: true
+
+  # Options
+  dotnet-configuration:
+    description: 'Build configuration to use when building and testing the package'
+    required: false
+    default: 'Release'
+  repository:
+    description: 'URL of the hosting server'
+    required: false
+    default: 'https://thunderstore.io'
+  package-files:
+    description: 'List of files for the listing page'
+    required: false
+    default: |
+      ./icon.png
+      ./README.md
+      ./CHANGELOG.md
+      ./LICENSE?(.txt|.md)
+
 # outputs
-# runs
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install ThunderPipe
+      shell: bash
+      run: dotnet tool install ThunderPipe
+
+    - name: Build Package
+      shell: bash
+      run: dotnet build --no-restore -c "$CONFIGURATION"
+      env:
+        CONFIGURATION: ${{ inputs.dotnet-configuration }}
+
+    - name: Test Package
+      shell: bash
+      run: dotnet test --no-restore -c "$CONFIGURATION"
+      env:
+        CONFIGURATION: ${{ inputs.dotnet-configuration }}
+
+    - name: Copy Build Files
+      shell: bash
+      run: |
+        mkdir -p "$DESTINATION"
+        
+        for pattern in $FILES; do
+          shopt -s nullglob
+        
+          for file in $pattern; do
+            if [ -f "$file" ]; then
+                cp "$file" "$DESTINATION"
+            fi
+          done
+        done
+      env:
+        FILES: ${{ inputs.files }}
+        DESTINATION: '${{ github.workspace }}/package/plugins/'
+
+    - name: Copy Package Files
+      shell: bash
+      run: |
+        mkdir -p "$DESTINATION"
+        
+        for pattern in $FILES; do
+          shopt -s nullglob
+        
+          for file in $pattern; do
+            if [ -f "$file" ]; then
+                cp "$file" "$DESTINATION"
+            fi
+          done
+        done
+      env:
+        FILES: ${{ inputs.package-files }}
+        DESTINATION: '${{ github.workspace }}/package/'
+
+    - name: Create manifest.json
+      shell: bash
+      run: |
+        jq -n \
+          --arg nm "$NAME" \
+          --arg desc "$DESCRIPTION" \
+          --arg ver "$VERSION" \
+          --arg web "$WEBSITE" \
+          --arg deps "$DEPENDENCIES" \
+          '{name: $nm, description: $desc, version_number: $ver, website_url: $web, dependencies: ($deps | split("\n") | map(select(length > 0)))}' \
+          > "$OUTPUT_FILE"
+      env:
+        NAME: ${{ inputs.name }}
+        DESCRIPTION: ${{ inputs.description }}
+        VERSION: ${{ inputs.version }}
+        WEBSITE: ${{ inputs.website }}
+        DEPENDENCIES: ${{ inputs.dependencies }}
+        OUTPUT_FILE: '${{ github.workspace }}/package/manifest.json'
+
+    - name: Validate Package
+      shell: bash
+      run: |
+        OPTIONS=()
+        
+        if [ -n "$REPOSITORY" ]; then
+          OPTIONS+=('--repository')
+          OPTIONS+=("$REPOSITORY")
+        fi
+        
+        dotnet tool run ThunderPipe validate "$PACKAGE_FOLDER" \
+          --token "$TOKEN" \
+          --disable-local --enable-remote \
+          --team "$TEAM" \
+          "${OPTIONS[@]}"
+      env:
+        PACKAGE_FOLDER: '${{ github.workspace }}/package/'
+        TOKEN: ${{ inputs.token }}
+        TEAM: ${{ inputs.team }}
+        REPOSITORY: ${{ inputs.repository }}
+
+    - name: Zip Package
+      shell: bash
+      run: |
+        cd "$SOURCE_FOLDER"
+        zip -r "$OUTPUT_FILE" .
+        cd -
+        mv "$SOURCE_FOLDER/$OUTPUT_FILE" "$OUTPUT_FILE"
+      env:
+        SOURCE_FOLDER: '${{ github.workspace }}/package/'
+        OUTPUT_FILE: '${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+
+    - name: Publish Package
+      shell: bash
+      run: |
+        OPTIONS=()
+
+        if [ -n "$REPOSITORY" ]; then
+          OPTIONS+=('--repository')
+          OPTIONS+=("$REPOSITORY")
+        fi
+
+        if [ "$HAS_NSFW" = 'true' ]; then
+          OPTIONS+=('--has-nsfw')
+        fi
+
+        if [ -n "$CATEGORIES" ]; then
+          IFS=$'\n'
+          read -ra categories <<< "$CATEGORIES"
+        
+          for category in "${categories[@]}";
+          do
+            OPTIONS+=('--categories')
+            OPTIONS+=("$category")
+          done
+        fi
+
+        dotnet tool run ThunderPipe publish "$FILE_PATH" "$TEAM" "$COMMUNITY" \
+          --token "$TOKEN" \
+          "${OPTIONS[@]}"
+      env:
+        FILE_PATH: '${{ github.workspace }}/${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+        TEAM: ${{ inputs.team }}
+        COMMUNITY: ${{ inputs.community }}
+        TOKEN: ${{ inputs.token }}
+        HAS_NSFW: ${{ inputs.has-nsfw }}
+        CATEGORIES: ${{ inputs.categories }}
+        REPOSITORY: ${{ inputs.repository }}
