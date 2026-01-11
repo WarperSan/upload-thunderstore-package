@@ -77,31 +77,38 @@ runs:
       shell: bash
       run: dotnet tool install ThunderPipe --prerelease
 
+    ### ---
+    ### Validate Inputs
+    ### ---
     - name: Validate Community
       shell: bash
-      run: dotnet tool run ThunderPipe validate community "$COMMUNITY"
+      run: |
+        dotnet tool run ThunderPipe validate --repository "$REPOSITORY" \
+          community "$COMMUNITY"
       env:
         COMMUNITY: ${{ inputs.community }}
+        REPOSITORY: ${{ inputs.repository }}
 
     - name: Validate Categories
       shell: bash
       run: |
         echo "::group::Validating categories"
-        
-        OPTIONS=()
 
         if [ -n "$CATEGORIES" ]; then
           IFS=$'\n'
           read -ra dependencies <<< "$CATEGORIES"
 
           if [ ${#categories[@]} -gt 0 ]; then
+            OPTIONS=()
+            
             for category in "${categories[@]}";
             do
               OPTIONS+=('--categories')
               OPTIONS+=("$category")
             done
         
-            dotnet tool run ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}"
+            dotnet tool run ThunderPipe validate --repository "$REPOSITORY" \
+              categories "$COMMUNITY" "${OPTIONS[@]}"
           else
             echo "No category to check."
           fi
@@ -113,25 +120,27 @@ runs:
       env:
         COMMUNITY: ${{ inputs.community }}
         CATEGORIES: ${{ inputs.categories }}
+        REPOSITORY: ${{ inputs.repository }}
 
     - name: Validate Dependencies
       shell: bash
       run: |
         echo "::group::Validating dependencies"
         
-        OPTIONS=()
-
         if [ -n "$DEPENDENCIES" ]; then
           IFS=$'\n'
           read -ra dependencies <<< "$DEPENDENCIES"
 
           if [ ${#dependencies[@]} -gt 0 ]; then
+            OPTIONS=()
+
             for dependency in "${dependencies[@]}";
             do
               OPTIONS+=("$dependency")
             done
         
-            dotnet tool run ThunderPipe validate dependencies "${OPTIONS[@]}"
+            dotnet tool run ThunderPipe validate --repository "$REPOSITORY" \
+              dependencies "${OPTIONS[@]}"
           else
             echo "No dependency to check."
           fi
@@ -142,7 +151,11 @@ runs:
         echo "::endgroup::"
       env:
         DEPENDENCIES: ${{ inputs.dependencies }}
+        REPOSITORY: ${{ inputs.repository }}
 
+    ### ---
+    ### Build Package
+    ### ---
     - name: Build Package
       shell: bash
       run: dotnet build --no-restore -c "$CONFIGURATION"
@@ -155,6 +168,9 @@ runs:
       env:
         CONFIGURATION: ${{ inputs.dotnet-configuration }}
 
+    ### ---
+    ### Prepare Package
+    ### ---
     - name: Copy Build Files
       shell: bash
       run: |
@@ -213,24 +229,19 @@ runs:
     - name: Validate Package
       shell: bash
       run: |
-        OPTIONS=()
-        
-        if [ -n "$REPOSITORY" ]; then
-          OPTIONS+=('--repository')
-          OPTIONS+=("$REPOSITORY")
-        fi
-        
-        dotnet tool run ThunderPipe validate package "$PACKAGE_FOLDER" \
+        dotnet tool run ThunderPipe validate --repository "$REPOSITORY" \
+          package "$PACKAGE_FOLDER" \
           --token "$TOKEN" \
-          --disable-local --enable-remote \
-          --team "$TEAM" \
-          "${OPTIONS[@]}"
+          --team "$TEAM"
       env:
         PACKAGE_FOLDER: '${{ github.workspace }}/package/'
         TOKEN: ${{ inputs.token }}
         TEAM: ${{ inputs.team }}
         REPOSITORY: ${{ inputs.repository }}
 
+    ### ---
+    ### Publish Package
+    ### ---
     - name: Zip Package
       shell: bash
       run: |
