@@ -229,10 +229,6 @@ runs:
     - name: Validate Package
       shell: bash
       run: |
-        echo "$REPOSITORY"
-        echo "$TOKEN"
-        echo "$PACKAGE_FOLDER"
-        echo "$TEAM"
         dotnet tool run ThunderPipe validate --repository "$REPOSITORY" \
           package "$PACKAGE_FOLDER" \
           --token "$TOKEN" \
