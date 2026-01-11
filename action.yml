@@ -75,7 +75,7 @@ runs:
   steps:
     - name: Install ThunderPipe
       shell: bash
-      run: dotnet tool install ThunderPipe
+      run: dotnet tool install ThunderPipe --prerelease
 
     - name: Validate Community
       shell: bash
