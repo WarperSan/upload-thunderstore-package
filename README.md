@@ -27,7 +27,7 @@ jobs:
         shell: bash
         run: dotnet restore && dotnet tool restore
 
-      - uses: WarperSan/upload-thunderstore-package@v1
+      - uses: WarperSan/upload-thunderstore-package@v0.1.0-beta
         with:
           community: 'lethal-company'
           team: 'LethalCompanyModding'
