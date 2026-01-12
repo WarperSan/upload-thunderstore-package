@@ -75,7 +75,7 @@ runs:
   steps:
     - name: Install ThunderPipe
       shell: bash
-      run: dotnet tool install ThunderPipe --version 0.1.0-beta
+      run: dotnet tool install ThunderPipe --version 0.1.1-beta
 
     ### ---
     ### Validate Inputs
@@ -103,7 +103,7 @@ runs:
             
             for category in "${categories[@]}";
             do
-              OPTIONS+=('--categories')
+              OPTIONS+=('--category')
               OPTIONS+=("$category")
             done
         
@@ -273,7 +273,7 @@ runs:
         
           for category in "${categories[@]}";
           do
-            OPTIONS+=('--categories')
+            OPTIONS+=('--category')
             OPTIONS+=("$category")
           done
         fi
