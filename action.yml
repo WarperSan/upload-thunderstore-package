@@ -132,15 +132,8 @@ runs:
           read -ra dependencies <<< "$DEPENDENCIES"
 
           if [ ${#dependencies[@]} -gt 0 ]; then
-            OPTIONS=()
-
-            for dependency in "${dependencies[@]}";
-            do
-              OPTIONS+=("$dependency")
-            done
-        
             dotnet tool run ThunderPipe validate --repository "$REPOSITORY" \
-              dependencies "${OPTIONS[@]}"
+              dependencies "${dependencies[@]}"
           else
             echo "No dependency to check."
           fi
