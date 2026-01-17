@@ -203,21 +203,38 @@ runs:
     - name: Create manifest.json
       shell: bash
       run: |
-        jq -n \
-          --arg nm "$NAME" \
-          --arg desc "$DESCRIPTION" \
-          --arg ver "$VERSION" \
-          --arg web "$WEBSITE" \
-          --arg deps "$DEPENDENCIES" \
-          '{name: $nm, description: $desc, version_number: $ver, website_url: $web, dependencies: ($deps | split("\n") | map(select(length > 0)))}' \
-          > "$OUTPUT_FILE"
+        OPTIONS=()
+        
+        if [ -n "$DESCRIPTION" ]; then
+          OPTIONS+=('--description')
+          OPTIONS+=("$DESCRIPTION")
+        fi
+        
+        if [ -n "$WEBSITE" ]; then
+          OPTIONS+=('--website')
+          OPTIONS+=("$WEBSITE")
+        fi
+        
+        if [ -n "$DEPENDENCIES" ]; then
+          IFS=$'\n'
+          read -ra dependencies <<< "$DEPENDENCIES"
+
+          for dependency in "${dependencies[@]}";
+          do
+            OPTIONS+=('--dependency')
+            OPTIONS+=("$dependency")
+          done
+        fi
+        
+        dotnet tool run ThunderPipe create --directory "$DIRECTORY" \
+          manifest "$NAME" "$VERSION" "${OPTIONS[@]}"
       env:
         NAME: ${{ inputs.name }}
         DESCRIPTION: ${{ inputs.description }}
         VERSION: ${{ inputs.version }}
         WEBSITE: ${{ inputs.website }}
         DEPENDENCIES: ${{ inputs.dependencies }}
-        OUTPUT_FILE: '${{ github.workspace }}/package/manifest.json'
+        DIRECTORY: '${{ github.workspace }}/package'
 
     - name: Validate Package
       shell: bash
