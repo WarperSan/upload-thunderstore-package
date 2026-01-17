@@ -75,7 +75,7 @@ runs:
   steps:
     - name: Install ThunderPipe
       shell: bash
-      run: dotnet tool install ThunderPipe --version 0.1.1-beta
+      run: dotnet tool install ThunderPipe --version 0.2.0-beta
 
     ### ---
     ### Validate Inputs
