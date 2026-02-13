@@ -94,24 +94,23 @@ runs:
     - name: Validate Categories
       shell: bash
       run: |
+        echo "$CATEGORIES"
         if [ -n "$CATEGORIES" ]; then
           IFS=$'\n'
           read -ra categories <<< "$CATEGORIES"
 
-          if [ ${#categories[@]} -gt 0 ]; then
-            OPTIONS=()
-            
-            for category in "${categories[@]}";
-            do
-              OPTIONS+=('--category')
-              OPTIONS+=("$category")
-            done
-        
-            echo "${OPTIONS[@]}"
-        
-            ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
-              --repository "$REPOSITORY"
-          fi
+          OPTIONS=()
+          
+          for category in "${categories[@]}";
+          do
+            OPTIONS+=('--category')
+            OPTIONS+=("$category")
+          done
+      
+          echo "${OPTIONS[@]}"
+      
+          ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
+            --repository "$REPOSITORY"
         fi
 
       env:
