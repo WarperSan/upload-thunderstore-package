@@ -107,11 +107,7 @@ runs:
         
             ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
               --repository "$REPOSITORY"
-          else
-            echo "No category to check."
           fi
-        else
-          echo "No category to check."
         fi
 
       env:
