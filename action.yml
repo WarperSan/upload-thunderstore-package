@@ -37,7 +37,7 @@ inputs:
     required: false
     default: ''
   website:
-    description: 'URL of the package''s website'
+    description: "URL of the package's website"
     required: false
     default: ''
   has-nsfw:
