@@ -122,13 +122,19 @@ runs:
       shell: bash
       run: |
         if [ -n "$DEPENDENCIES" ]; then
-          IFS=$'\n'
-          read -ra dependencies <<< "$DEPENDENCIES"
+          mapfile -t dependencies <<< "$DEPENDENCIES"
+          
+          DEPS=()
+        
+          for dep in "${dependencies[@]}"; do
+            [[ -z "$dep" ]] && continue
+            DEPS+=("$dep")
+          done
 
-          if [ ${#dependencies[@]} -gt 0 ]; then
-            ThunderPipe validate dependencies "${dependencies[@]}" \
-              --repository "$REPOSITORY"
-          fi
+          if [ ${#DEPS[@]} -gt 0 ]; then
+            ThunderPipe validate dependencies "${DEPS[@]}" \
+            --repository "$REPOSITORY"
+         fi
         fi
 
       env:
