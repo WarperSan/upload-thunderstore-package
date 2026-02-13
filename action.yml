@@ -94,10 +94,8 @@ runs:
     - name: Validate Categories
       shell: bash
       run: |
-        echo "$CATEGORIES"
         if [ -n "$CATEGORIES" ]; then
-          IFS=$'\n'
-          read -ra categories <<< "$CATEGORIES"
+          mapfile -t categories <<< "$CATEGORIES"
 
           OPTIONS=()
           
@@ -271,7 +269,6 @@ runs:
         fi
 
         if [ -n "$CATEGORIES" ]; then
-          IFS=$'\n'
           read -ra categories <<< "$CATEGORIES"
         
           for category in "${categories[@]}";
