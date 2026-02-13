@@ -151,7 +151,7 @@ runs:
 
     - name: Test Package
       shell: bash
-      run: dotnet test --no-restore -c "$CONFIGURATION"
+      run: dotnet test --no-build --no-restore -c "$CONFIGURATION"
       env:
         CONFIGURATION: ${{ inputs.dotnet-configuration }}
 
