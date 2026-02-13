@@ -107,7 +107,7 @@ runs:
               OPTIONS+=("$category")
             done
         
-            echo "$OPTIONS"
+            echo "${OPTIONS[@]}"
         
             ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
               --repository "$REPOSITORY"
@@ -129,11 +129,7 @@ runs:
           if [ ${#dependencies[@]} -gt 0 ]; then
             ThunderPipe validate dependencies "${dependencies[@]}" \
               --repository "$REPOSITORY"
-          else
-            echo "No dependency to check."
           fi
-        else
-          echo "No dependency to check."
         fi
 
       env:
