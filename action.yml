@@ -107,6 +107,8 @@ runs:
               OPTIONS+=("$category")
             done
         
+            echo "$OPTIONS"
+        
             ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
               --repository "$REPOSITORY"
           fi
