@@ -183,8 +183,6 @@ runs:
     - name: Copy Build Files
       shell: bash
       run: |
-        set -euxo pipefail
-        
         rm -rf "$DESTINATION"
         mkdir -p "$DESTINATION"
         
