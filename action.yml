@@ -234,7 +234,7 @@ runs:
         VERSION: ${{ inputs.version }}
         WEBSITE: ${{ inputs.website }}
         DEPENDENCIES: ${{ inputs.dependencies }}
-        DIRECTORY: '${{ github.workspace }}/package'
+        DIRECTORY: '${{ github.workspace }}/package/'
 
     - name: Validate Package
       shell: bash
