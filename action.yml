@@ -75,7 +75,7 @@ runs:
   steps:
     - name: Install ThunderPipe
       shell: bash
-      run: dotnet tool install ThunderPipe --version 1.0.1
+      run: dotnet tool install ThunderPipe --global --version 1.0.1
 
     ### ---
     ### Validate Inputs
@@ -83,7 +83,7 @@ runs:
     - name: Validate Community
       shell: bash
       run: |
-        dotnet tool run ThunderPipe validate community "$COMMUNITY" \
+        ThunderPipe validate community "$COMMUNITY" \
           --repository "$REPOSITORY"
       env:
         COMMUNITY: ${{ inputs.community }}
@@ -107,7 +107,7 @@ runs:
               OPTIONS+=("$category")
             done
         
-            dotnet tool run ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
+            ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
               --repository "$REPOSITORY"
           else
             echo "No category to check."
@@ -132,7 +132,7 @@ runs:
           read -ra dependencies <<< "$DEPENDENCIES"
 
           if [ ${#dependencies[@]} -gt 0 ]; then
-            dotnet tool run ThunderPipe validate dependencies "${dependencies[@]}" \
+            ThunderPipe validate dependencies "${dependencies[@]}" \
               --repository "$REPOSITORY"
           else
             echo "No dependency to check."
@@ -231,7 +231,7 @@ runs:
           done
         fi
         
-        dotnet tool run ThunderPipe create manifest "$NAME" "$VERSION" "${OPTIONS[@]}"
+        ThunderPipe create manifest "$NAME" "$VERSION" "${OPTIONS[@]}"
       env:
         NAME: ${{ inputs.name }}
         DESCRIPTION: ${{ inputs.description }}
@@ -243,7 +243,7 @@ runs:
     - name: Validate Package
       shell: bash
       run: |
-        dotnet tool run ThunderPipe validate package "$PACKAGE_FOLDER" \
+        ThunderPipe validate package "$PACKAGE_FOLDER" \
           --token "$TOKEN" \
           --team "$TEAM" \
           --repository "$REPOSITORY"
@@ -292,7 +292,7 @@ runs:
           done
         fi
 
-        dotnet tool run ThunderPipe publish "$FILE_PATH" "$TEAM" "$COMMUNITY" \
+        ThunderPipe publish "$FILE_PATH" "$TEAM" "$COMMUNITY" \
           --token "$TOKEN" \
           "${OPTIONS[@]}"
       env:
