@@ -241,10 +241,12 @@ runs:
         WEBSITE: ${{ inputs.website }}
         DEPENDENCIES: ${{ inputs.dependencies }}
         DIRECTORY: '${{ github.workspace }}/package/'
-        
+
     - name: Validate Package
       shell: bash
       run: |
+        echo "$REPOSITORY"
+        echo "$PACKAGE_FOLDER"
         ThunderPipe validate package "$PACKAGE_FOLDER" \
           --token "$TOKEN" \
           --team "$TEAM" \
