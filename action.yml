@@ -101,6 +101,8 @@ runs:
           
           for category in "${categories[@]}";
           do
+            [ -z "$category" ] && continue
+
             OPTIONS+=('--category')
             OPTIONS+=("$category")
           done
@@ -273,6 +275,8 @@ runs:
         
           for category in "${categories[@]}";
           do
+            [ -z "$category" ] && continue
+        
             OPTIONS+=('--category')
             OPTIONS+=("$category")
           done
