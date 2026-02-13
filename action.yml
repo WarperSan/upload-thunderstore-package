@@ -37,7 +37,7 @@ inputs:
     required: false
     default: ''
   website:
-    description: 'URL of the package''s website'
+    description: "URL of the package's website"
     required: false
     default: ''
   has-nsfw:
@@ -68,14 +68,19 @@ inputs:
       ./CHANGELOG.md
       ./LICENSE?(.txt|.md)
 
-# outputs
+outputs:
+  zip-path:
+    description: "Absolute path to the generated zip"
+    value: ${{ steps.zip.outputs.zip-path }}
 
 runs:
   using: 'composite'
   steps:
     - name: Install ThunderPipe
       shell: bash
-      run: dotnet tool install ThunderPipe --version 1.0.1
+      run: |
+        dotnet tool install ThunderPipe --global --version 1.0.1
+        echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
     ### ---
     ### Validate Inputs
@@ -83,7 +88,7 @@ runs:
     - name: Validate Community
       shell: bash
       run: |
-        dotnet tool run ThunderPipe validate community "$COMMUNITY" \
+        ThunderPipe validate community "$COMMUNITY" \
           --repository "$REPOSITORY"
       env:
         COMMUNITY: ${{ inputs.community }}
@@ -92,31 +97,24 @@ runs:
     - name: Validate Categories
       shell: bash
       run: |
-        echo "::group::Validating categories"
-
         if [ -n "$CATEGORIES" ]; then
-          IFS=$'\n'
-          read -ra categories <<< "$CATEGORIES"
+          mapfile -t categories <<< "$CATEGORIES"
 
-          if [ ${#categories[@]} -gt 0 ]; then
-            OPTIONS=()
-            
-            for category in "${categories[@]}";
-            do
-              OPTIONS+=('--category')
-              OPTIONS+=("$category")
-            done
-        
-            dotnet tool run ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
-              --repository "$REPOSITORY"
-          else
-            echo "No category to check."
-          fi
-        else
-          echo "No category to check."
+          OPTIONS=()
+          
+          for category in "${categories[@]}";
+          do
+            [ -z "$category" ] && continue
+
+            OPTIONS+=('--category')
+            OPTIONS+=("$category")
+          done
+      
+          echo "${OPTIONS[@]}"
+      
+          ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
+            --repository "$REPOSITORY"
         fi
-
-        echo "::endgroup::"
       env:
         COMMUNITY: ${{ inputs.community }}
         CATEGORIES: ${{ inputs.categories }}
@@ -125,23 +123,21 @@ runs:
     - name: Validate Dependencies
       shell: bash
       run: |
-        echo "::group::Validating dependencies"
-        
         if [ -n "$DEPENDENCIES" ]; then
-          IFS=$'\n'
-          read -ra dependencies <<< "$DEPENDENCIES"
+          mapfile -t dependencies <<< "$DEPENDENCIES"
+          
+          DEPS=()
+        
+          for dep in "${dependencies[@]}"; do
+            [[ -z "$dep" ]] && continue
+            DEPS+=("$dep")
+          done
 
-          if [ ${#dependencies[@]} -gt 0 ]; then
-            dotnet tool run ThunderPipe validate dependencies "${dependencies[@]}" \
-              --repository "$REPOSITORY"
-          else
-            echo "No dependency to check."
-          fi
-        else
-          echo "No dependency to check."
+          if [ ${#DEPS[@]} -gt 0 ]; then
+            ThunderPipe validate dependencies "${DEPS[@]}" \
+            --repository "$REPOSITORY"
+         fi
         fi
-
-        echo "::endgroup::"
       env:
         DEPENDENCIES: ${{ inputs.dependencies }}
         REPOSITORY: ${{ inputs.repository }}
@@ -157,48 +153,54 @@ runs:
 
     - name: Test Package
       shell: bash
-      run: dotnet test --no-restore -c "$CONFIGURATION"
+      run: dotnet test --no-build --no-restore -c "$CONFIGURATION"
       env:
         CONFIGURATION: ${{ inputs.dotnet-configuration }}
 
     ### ---
     ### Prepare Package
     ### ---
-    - name: Copy Build Files
-      shell: bash
-      run: |
-        mkdir -p "$DESTINATION"
-        
-        for pattern in $FILES; do
-          shopt -s nullglob
-        
-          for file in $pattern; do
-            if [ -f "$file" ]; then
-                cp "$file" "$DESTINATION"
-            fi
-          done
-        done
-      env:
-        FILES: ${{ inputs.files }}
-        DESTINATION: '${{ github.workspace }}/package/plugins/'
-
     - name: Copy Package Files
       shell: bash
       run: |
+        rm -rf "$DESTINATION"
         mkdir -p "$DESTINATION"
         
-        for pattern in $FILES; do
-          shopt -s nullglob
+        shopt -s nullglob
+        mapfile -t patterns <<< "$FILES"
+  
+        for pattern in "${patterns[@]}"; do
+          [[ -z "$pattern" ]] && continue
         
           for file in $pattern; do
-            if [ -f "$file" ]; then
-                cp "$file" "$DESTINATION"
-            fi
+            [[ -f "$file" ]] && cp "$file" "$DESTINATION"
           done
         done
       env:
         FILES: ${{ inputs.package-files }}
         DESTINATION: '${{ github.workspace }}/package/'
+
+    - name: Copy Build Files
+      shell: bash
+      run: |        
+        rm -rf "$DESTINATION"
+        mkdir -p "$DESTINATION"
+        
+        shopt -s nullglob
+        mapfile -t patterns <<< "$FILES"
+        
+        for pattern in "${patterns[@]}"; do
+          [[ -z "$pattern" ]] && continue
+        
+          for file in $pattern; do
+            [[ -f "$file" ]] || continue
+            
+            cp "$file" "$DESTINATION"
+          done
+        done
+      env:
+        FILES: ${{ inputs.files }}
+        DESTINATION: '${{ github.workspace }}/package/plugins/'
 
     - name: Create manifest.json
       shell: bash
@@ -221,17 +223,17 @@ runs:
         fi
         
         if [ -n "$DEPENDENCIES" ]; then
-          IFS=$'\n'
-          read -ra dependencies <<< "$DEPENDENCIES"
+          mapfile -t dependencies <<< "$DEPENDENCIES"
+        
+          for dependency in "${dependencies[@]}"; do
+            [[ -z "$dependency" ]] && continue
 
-          for dependency in "${dependencies[@]}";
-          do
             OPTIONS+=('--dependency')
             OPTIONS+=("$dependency")
           done
         fi
         
-        dotnet tool run ThunderPipe create manifest "$NAME" "$VERSION" "${OPTIONS[@]}"
+        ThunderPipe create manifest "$NAME" "$VERSION" "${OPTIONS[@]}"
       env:
         NAME: ${{ inputs.name }}
         DESCRIPTION: ${{ inputs.description }}
@@ -243,7 +245,7 @@ runs:
     - name: Validate Package
       shell: bash
       run: |
-        dotnet tool run ThunderPipe validate package "$PACKAGE_FOLDER" \
+        ThunderPipe validate package "$PACKAGE_FOLDER" \
           --token "$TOKEN" \
           --team "$TEAM" \
           --repository "$REPOSITORY"
@@ -257,15 +259,20 @@ runs:
     ### Publish Package
     ### ---
     - name: Zip Package
+      id: zip
       shell: bash
       run: |
-        cd "$SOURCE_FOLDER"
-        zip -r "$OUTPUT_FILE" .
-        cd -
-        mv "$SOURCE_FOLDER/$OUTPUT_FILE" "$OUTPUT_FILE"
+        rm -f "$OUTPUT_FILE"
+  
+        (
+          cd "$SOURCE_FOLDER"
+          zip -r "$OUTPUT_FILE" .
+        )
+        
+        echo "zip-path=$OUTPUT_FILE" >> "$GITHUB_OUTPUT"
       env:
         SOURCE_FOLDER: '${{ github.workspace }}/package/'
-        OUTPUT_FILE: '${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+        OUTPUT_FILE: '${{ github.workspace }}/${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
 
     - name: Publish Package
       shell: bash
@@ -282,21 +289,22 @@ runs:
         fi
 
         if [ -n "$CATEGORIES" ]; then
-          IFS=$'\n'
-          read -ra categories <<< "$CATEGORIES"
+          mapfile -t categories <<< "$CATEGORIES"
         
           for category in "${categories[@]}";
           do
+            [ -z "$category" ] && continue
+        
             OPTIONS+=('--category')
             OPTIONS+=("$category")
           done
         fi
 
-        dotnet tool run ThunderPipe publish "$FILE_PATH" "$TEAM" "$COMMUNITY" \
+        ThunderPipe publish "$FILE_PATH" "$TEAM" "$COMMUNITY" \
           --token "$TOKEN" \
           "${OPTIONS[@]}"
       env:
-        FILE_PATH: '${{ github.workspace }}/${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+        FILE_PATH: ${{ steps.zip.outputs.zip-path }}
         TEAM: ${{ inputs.team }}
         COMMUNITY: ${{ inputs.community }}
         TOKEN: ${{ inputs.token }}
