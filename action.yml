@@ -75,7 +75,9 @@ runs:
   steps:
     - name: Install ThunderPipe
       shell: bash
-      run: dotnet tool install ThunderPipe --global --version 1.0.1
+      run: |
+        dotnet tool install ThunderPipe --global --version 1.0.1
+        echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
     ### ---
     ### Validate Inputs
