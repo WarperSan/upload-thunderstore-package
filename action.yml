@@ -158,24 +158,6 @@ runs:
     ### ---
     ### Prepare Package
     ### ---
-    - name: Copy Build Files
-      shell: bash
-      run: |
-        mkdir -p "$DESTINATION"
-        
-        for pattern in $FILES; do
-          shopt -s nullglob
-        
-          for file in $pattern; do
-            if [ -f "$file" ]; then
-                cp "$file" "$DESTINATION"
-            fi
-          done
-        done
-      env:
-        FILES: ${{ inputs.files }}
-        DESTINATION: '${{ github.workspace }}/package/plugins/'
-
     - name: Copy Package Files
       shell: bash
       run: |
@@ -193,6 +175,24 @@ runs:
       env:
         FILES: ${{ inputs.package-files }}
         DESTINATION: '${{ github.workspace }}/package/'
+
+    - name: Copy Build Files
+      shell: bash
+      run: |
+        mkdir -p "$DESTINATION"
+        
+        for pattern in $FILES; do
+          shopt -s nullglob
+        
+          for file in $pattern; do
+            if [ -f "$file" ]; then
+                cp "$file" "$DESTINATION"
+            fi
+          done
+        done
+      env:
+        FILES: ${{ inputs.files }}
+        DESTINATION: '${{ github.workspace }}/package/plugins/'
 
     - name: Create manifest.json
       shell: bash
