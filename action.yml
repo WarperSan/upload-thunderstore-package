@@ -277,7 +277,6 @@ runs:
     - name: Publish Package
       shell: bash
       run: |
-        exit 1
         OPTIONS=()
 
         if [ -n "$REPOSITORY" ]; then
