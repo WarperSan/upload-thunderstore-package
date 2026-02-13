@@ -163,6 +163,8 @@ runs:
     - name: Copy Package Files
       shell: bash
       run: |
+        set -euxo pipefail
+        
         rm -rf "$DESTINATION"
         mkdir -p "$DESTINATION"
         
@@ -182,7 +184,7 @@ runs:
 
     - name: Copy Build Files
       shell: bash
-      run: |
+      run: |        
         rm -rf "$DESTINATION"
         mkdir -p "$DESTINATION"
         
