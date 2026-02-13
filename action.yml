@@ -207,7 +207,7 @@ runs:
         
         if [ -n "$DIRECTORY" ]; then
           OPTIONS+=('--directory')
-          OPTIONS+=('$DIRECTORY')
+          OPTIONS+=("$DIRECTORY")
         fi
 
         if [ -n "$DESCRIPTION" ]; then
