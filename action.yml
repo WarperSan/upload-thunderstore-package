@@ -68,7 +68,10 @@ inputs:
       ./CHANGELOG.md
       ./LICENSE?(.txt|.md)
 
-# outputs
+outputs:
+  zip-path:
+    description: "Absolute path to the generated zip"
+    value: ${{ steps.zip.outputs.zip-path }}
 
 runs:
   using: 'composite'
@@ -254,6 +257,7 @@ runs:
     ### Publish Package
     ### ---
     - name: Zip Package
+      id: zip
       shell: bash
       run: |
         rm -f "$OUTPUT_FILE"
@@ -262,6 +266,8 @@ runs:
           cd "$SOURCE_FOLDER"
           zip -r "$OUTPUT_FILE" .
         )
+        
+        echo "zip-path=$OUTPUT_FILE" >> "$GITHUB_OUTPUT"
       env:
         SOURCE_FOLDER: '${{ github.workspace }}/package/'
         OUTPUT_FILE: '${{ github.workspace }}/${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
@@ -296,7 +302,7 @@ runs:
           --token "$TOKEN" \
           "${OPTIONS[@]}"
       env:
-        FILE_PATH: '${{ github.workspace }}/${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+        FILE_PATH: ${{ steps.zip.outputs.zip-path }}
         TEAM: ${{ inputs.team }}
         COMMUNITY: ${{ inputs.community }}
         TOKEN: ${{ inputs.token }}
