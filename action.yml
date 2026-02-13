@@ -183,6 +183,8 @@ runs:
     - name: Copy Build Files
       shell: bash
       run: |
+        set -euxo pipefail
+        
         rm -rf "$DESTINATION"
         mkdir -p "$DESTINATION"
         
@@ -193,7 +195,9 @@ runs:
           [[ -z "$pattern" ]] && continue
         
           for file in $pattern; do
-            [[ -f "$file" ]] && cp "$file" "$DESTINATION"
+            [[ -f "$file" ]] || continue
+            
+            cp "$file" "$DESTINATION"
           done
         done
       env:
