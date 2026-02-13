@@ -92,8 +92,6 @@ runs:
     - name: Validate Categories
       shell: bash
       run: |
-        echo "::group::Validating categories"
-
         if [ -n "$CATEGORIES" ]; then
           IFS=$'\n'
           read -ra categories <<< "$CATEGORIES"
@@ -116,7 +114,6 @@ runs:
           echo "No category to check."
         fi
 
-        echo "::endgroup::"
       env:
         COMMUNITY: ${{ inputs.community }}
         CATEGORIES: ${{ inputs.categories }}
@@ -125,8 +122,6 @@ runs:
     - name: Validate Dependencies
       shell: bash
       run: |
-        echo "::group::Validating dependencies"
-        
         if [ -n "$DEPENDENCIES" ]; then
           IFS=$'\n'
           read -ra dependencies <<< "$DEPENDENCIES"
@@ -141,7 +136,6 @@ runs:
           echo "No dependency to check."
         fi
 
-        echo "::endgroup::"
       env:
         DEPENDENCIES: ${{ inputs.dependencies }}
         REPOSITORY: ${{ inputs.repository }}
