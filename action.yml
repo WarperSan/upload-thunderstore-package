@@ -112,7 +112,6 @@ runs:
           ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
             --repository "$REPOSITORY"
         fi
-
       env:
         COMMUNITY: ${{ inputs.community }}
         CATEGORIES: ${{ inputs.categories }}
@@ -136,7 +135,6 @@ runs:
             --repository "$REPOSITORY"
          fi
         fi
-
       env:
         DEPENDENCIES: ${{ inputs.dependencies }}
         REPOSITORY: ${{ inputs.repository }}
@@ -162,15 +160,17 @@ runs:
     - name: Copy Package Files
       shell: bash
       run: |
+        rm -rf "$DESTINATION"
         mkdir -p "$DESTINATION"
         
-        for pattern in $FILES; do
-          shopt -s nullglob
+        shopt -s nullglob
+        mapfile -t patterns <<< "$FILES"
+  
+        for pattern in "${patterns[@]}"; do
+          [[ -z "$pattern" ]] && continue
         
           for file in $pattern; do
-            if [ -f "$file" ]; then
-                cp "$file" "$DESTINATION"
-            fi
+            [[ -f "$file" ]] && cp "$file" "$DESTINATION"
           done
         done
       env:
@@ -180,15 +180,17 @@ runs:
     - name: Copy Build Files
       shell: bash
       run: |
+        rm -rf "$DESTINATION"
         mkdir -p "$DESTINATION"
         
-        for pattern in $FILES; do
-          shopt -s nullglob
+        shopt -s nullglob
+        mapfile -t patterns <<< "$FILES"
+        
+        for pattern in "${patterns[@]}"; do
+          [[ -z "$pattern" ]] && continue
         
           for file in $pattern; do
-            if [ -f "$file" ]; then
-                cp "$file" "$DESTINATION"
-            fi
+            [[ -f "$file" ]] && cp "$file" "$DESTINATION"
           done
         done
       env:
@@ -216,11 +218,11 @@ runs:
         fi
         
         if [ -n "$DEPENDENCIES" ]; then
-          IFS=$'\n'
-          read -ra dependencies <<< "$DEPENDENCIES"
+          mapfile -t dependencies <<< "$DEPENDENCIES"
+        
+          for dependency in "${dependencies[@]}"; do
+            [[ -z "$dependency" ]] && continue
 
-          for dependency in "${dependencies[@]}";
-          do
             OPTIONS+=('--dependency')
             OPTIONS+=("$dependency")
           done
@@ -254,13 +256,15 @@ runs:
     - name: Zip Package
       shell: bash
       run: |
-        cd "$SOURCE_FOLDER"
-        zip -r "$OUTPUT_FILE" .
-        cd -
-        mv "$SOURCE_FOLDER/$OUTPUT_FILE" "$OUTPUT_FILE"
+        rm -f "$OUTPUT_FILE"
+  
+        (
+          cd "$SOURCE_FOLDER"
+          zip -r "$OUTPUT_FILE" .
+        )
       env:
         SOURCE_FOLDER: '${{ github.workspace }}/package/'
-        OUTPUT_FILE: '${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
+        OUTPUT_FILE: '${{ github.workspace }}/${{ inputs.team }}-${{ inputs.name }}-${{ inputs.version }}.zip'
 
     - name: Publish Package
       shell: bash
@@ -277,7 +281,7 @@ runs:
         fi
 
         if [ -n "$CATEGORIES" ]; then
-          read -ra categories <<< "$CATEGORIES"
+          mapfile -t categories <<< "$CATEGORIES"
         
           for category in "${categories[@]}";
           do
