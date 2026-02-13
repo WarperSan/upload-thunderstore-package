@@ -83,8 +83,8 @@ runs:
     - name: Validate Community
       shell: bash
       run: |
-        dotnet tool run ThunderPipe validate --repository "$REPOSITORY" \
-          community "$COMMUNITY"
+        dotnet tool run ThunderPipe validate community "$COMMUNITY" \
+          --repository "$REPOSITORY"
       env:
         COMMUNITY: ${{ inputs.community }}
         REPOSITORY: ${{ inputs.repository }}
@@ -107,8 +107,8 @@ runs:
               OPTIONS+=("$category")
             done
         
-            dotnet tool run ThunderPipe validate --repository "$REPOSITORY" \
-              categories "$COMMUNITY" "${OPTIONS[@]}"
+            dotnet tool run ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
+              --repository "$REPOSITORY"
           else
             echo "No category to check."
           fi
@@ -132,8 +132,8 @@ runs:
           read -ra dependencies <<< "$DEPENDENCIES"
 
           if [ ${#dependencies[@]} -gt 0 ]; then
-            dotnet tool run ThunderPipe validate --repository "$REPOSITORY" \
-              dependencies "${dependencies[@]}"
+            dotnet tool run ThunderPipe validate dependencies "${dependencies[@]}" \
+              --repository "$REPOSITORY"
           else
             echo "No dependency to check."
           fi
@@ -205,6 +205,11 @@ runs:
       run: |
         OPTIONS=()
         
+        if [ -n "$DIRECTORY" ]; then
+          OPTIONS+=('--directory')
+          OPTIONS+=('$DIRECTORY')
+        fi
+
         if [ -n "$DESCRIPTION" ]; then
           OPTIONS+=('--description')
           OPTIONS+=("$DESCRIPTION")
@@ -226,8 +231,7 @@ runs:
           done
         fi
         
-        dotnet tool run ThunderPipe create --directory "$DIRECTORY" \
-          manifest "$NAME" "$VERSION" "${OPTIONS[@]}"
+        dotnet tool run ThunderPipe create manifest "$NAME" "$VERSION" "${OPTIONS[@]}"
       env:
         NAME: ${{ inputs.name }}
         DESCRIPTION: ${{ inputs.description }}
@@ -239,10 +243,10 @@ runs:
     - name: Validate Package
       shell: bash
       run: |
-        dotnet tool run ThunderPipe validate --repository "$REPOSITORY" \
-          package "$PACKAGE_FOLDER" \
+        dotnet tool run ThunderPipe validate package "$PACKAGE_FOLDER" \
           --token "$TOKEN" \
-          --team "$TEAM"
+          --team "$TEAM" \
+          --repository "$REPOSITORY"
       env:
         PACKAGE_FOLDER: '${{ github.workspace }}/package/'
         TOKEN: ${{ inputs.token }}
