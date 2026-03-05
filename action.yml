@@ -51,7 +51,7 @@ inputs:
     required: true
 
   # Options
-  repository:
+  host:
     description: 'URL of the Thunderstore server to publish to'
     required: false
     default: 'https://thunderstore.io'
