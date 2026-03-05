@@ -11,7 +11,7 @@ inputs:
     description: 'Slug of the community to publish the package to'
     required: true
   team:
-    description: 'Name of team publishing the package'
+    description: 'Name of the team publishing the package'
     required: true
   name:
     description: 'Name of the package'
@@ -20,12 +20,12 @@ inputs:
     description: 'Semantic version of the package'
     required: true
   files:
-    description: 'List of files needed by the package'
+    description: 'List of files to include in the package. Supports path mapping using "source -> destination"'
     required: true
 
   # Optional inputs
   categories:
-    description: 'List of slugs for each category the package belongs to'
+    description: 'Slug of each category the package belongs to'
     required: false
     default: ''
   description:
@@ -33,7 +33,7 @@ inputs:
     required: false
     default: ''
   dependencies:
-    description: 'List of dependency strings for each package needed by the package'
+    description: 'Dependency strings for required packages'
     required: false
     default: ''
   website:
@@ -41,7 +41,7 @@ inputs:
     required: false
     default: ''
   has-nsfw:
-    description: 'Marks the package as "Not Safe For Work" (NSFW)'
+    description: 'Marks the package as containing NSFW content'
     required: false
     default: 'false'
 
@@ -52,11 +52,11 @@ inputs:
 
   # Options
   repository:
-    description: 'URL of the hosting server'
+    description: 'URL of the Thunderstore server to publish to'
     required: false
     default: 'https://thunderstore.io'
   package-files:
-    description: 'List of files for the listing page'
+    description: 'List of files to include on the package listing page'
     required: false
     default: |
       ./icon.png
@@ -88,7 +88,7 @@ runs:
           --host "$HOST"
       env:
         COMMUNITY: ${{ inputs.community }}
-        HOST: ${{ inputs.repository }}
+        HOST: ${{ inputs.host }}
 
     - name: Validate Categories
       shell: bash
@@ -102,7 +102,7 @@ runs:
       env:
         COMMUNITY: ${{ inputs.community }}
         CATEGORIES: ${{ inputs.categories }}
-        HOST: ${{ inputs.repository }}
+        HOST: ${{ inputs.host }}
 
     - name: Validate Dependencies
       shell: bash
@@ -115,7 +115,7 @@ runs:
         fi
       env:
         DEPENDENCIES: ${{ inputs.dependencies }}
-        HOST: ${{ inputs.repository }}
+        HOST: ${{ inputs.host }}
 
     ### ---
     ### Prepare Package
@@ -222,7 +222,7 @@ runs:
         PACKAGE_FOLDER: '${{ github.workspace }}/package/'
         TEAM: ${{ inputs.team }}
         TOKEN: ${{ inputs.token }}
-        HOST: ${{ inputs.repository }}
+        HOST: ${{ inputs.host }}
 
     ### ---
     ### Publish Package
@@ -279,4 +279,4 @@ runs:
         TOKEN: ${{ inputs.token }}
         HAS_NSFW: ${{ inputs.has-nsfw }}
         CATEGORIES: ${{ inputs.categories }}
-        HOST: ${{ inputs.repository }}
+        HOST: ${{ inputs.host }}
