@@ -75,7 +75,7 @@ runs:
     - name: Install ThunderPipe
       shell: bash
       run: |
-        dotnet tool install ThunderPipe --global --version 1.0.1
+        dotnet tool install ThunderPipe --global --version 1.0.2
         echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
     ### ---
@@ -85,10 +85,10 @@ runs:
       shell: bash
       run: |
         ThunderPipe validate community "$COMMUNITY" \
-          --repository "$REPOSITORY"
+          --host "$HOST"
       env:
         COMMUNITY: ${{ inputs.community }}
-        REPOSITORY: ${{ inputs.repository }}
+        HOST: ${{ inputs.repository }}
 
     - name: Validate Categories
       shell: bash
@@ -96,25 +96,13 @@ runs:
         if [ -n "$CATEGORIES" ]; then
           mapfile -t categories <<< "$CATEGORIES"
 
-          OPTIONS=()
-          
-          for category in "${categories[@]}";
-          do
-            [ -z "$category" ] && continue
-
-            OPTIONS+=('--category')
-            OPTIONS+=("$category")
-          done
-      
-          echo "${OPTIONS[@]}"
-      
-          ThunderPipe validate categories "$COMMUNITY" "${OPTIONS[@]}" \
-            --repository "$REPOSITORY"
+          ThunderPipe validate categories "$COMMUNITY" "${categories[@]}" \
+            --host "$HOST"
         fi
       env:
         COMMUNITY: ${{ inputs.community }}
         CATEGORIES: ${{ inputs.categories }}
-        REPOSITORY: ${{ inputs.repository }}
+        HOST: ${{ inputs.repository }}
 
     - name: Validate Dependencies
       shell: bash
@@ -122,21 +110,12 @@ runs:
         if [ -n "$DEPENDENCIES" ]; then
           mapfile -t dependencies <<< "$DEPENDENCIES"
           
-          DEPS=()
-        
-          for dep in "${dependencies[@]}"; do
-            [[ -z "$dep" ]] && continue
-            DEPS+=("$dep")
-          done
-
-          if [ ${#DEPS[@]} -gt 0 ]; then
-            ThunderPipe validate dependencies "${DEPS[@]}" \
-            --repository "$REPOSITORY"
-         fi
+          ThunderPipe validate dependencies "${dependencies[@]}" \
+          --host "$HOST"
         fi
       env:
         DEPENDENCIES: ${{ inputs.dependencies }}
-        REPOSITORY: ${{ inputs.repository }}
+        HOST: ${{ inputs.repository }}
 
     ### ---
     ### Prepare Package
@@ -199,7 +178,7 @@ runs:
         OPTIONS=()
         
         if [ -n "$DIRECTORY" ]; then
-          OPTIONS+=('--directory')
+          OPTIONS+=('--output-dir')
           OPTIONS+=("$DIRECTORY")
         fi
 
@@ -236,15 +215,14 @@ runs:
     - name: Validate Package
       shell: bash
       run: |
-        ThunderPipe validate package "$PACKAGE_FOLDER" \
+        ThunderPipe validate package "$PACKAGE_FOLDER" "$TEAM" \
           --token "$TOKEN" \
-          --team "$TEAM" \
-          --repository "$REPOSITORY"
+          --host "$HOST"
       env:
         PACKAGE_FOLDER: '${{ github.workspace }}/package/'
-        TOKEN: ${{ inputs.token }}
         TEAM: ${{ inputs.team }}
-        REPOSITORY: ${{ inputs.repository }}
+        TOKEN: ${{ inputs.token }}
+        HOST: ${{ inputs.repository }}
 
     ### ---
     ### Publish Package
@@ -270,9 +248,9 @@ runs:
       run: |
         OPTIONS=()
 
-        if [ -n "$REPOSITORY" ]; then
-          OPTIONS+=('--repository')
-          OPTIONS+=("$REPOSITORY")
+        if [ -n "$HOST" ]; then
+          OPTIONS+=('--host')
+          OPTIONS+=("$HOST")
         fi
 
         if [ "$HAS_NSFW" = 'true' ]; then
@@ -301,4 +279,4 @@ runs:
         TOKEN: ${{ inputs.token }}
         HAS_NSFW: ${{ inputs.has-nsfw }}
         CATEGORIES: ${{ inputs.categories }}
-        REPOSITORY: ${{ inputs.repository }}
+        HOST: ${{ inputs.repository }}
