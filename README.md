@@ -26,7 +26,11 @@ jobs:
       - name: Restores Dependencies & Tools
         shell: bash
         run: dotnet restore && dotnet tool restore
-
+      
+      - name: Build
+        shell: bash
+        run: dotnet build --no-restore -c "Release"
+      
       - uses: WarperSan/upload-thunderstore-package@v1.0.1
         with:
           community: 'lethal-company'
