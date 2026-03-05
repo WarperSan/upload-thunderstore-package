@@ -87,11 +87,11 @@ Here is an example:
 ```
 ./
 |- src/
-    |- MyMod.cs
-    ...
+|  |- MyMod.cs
+|   ...
 |- Resources/
-    |- icon.png
-    ...
+|  |- icon.png
+|  ...
 |- README.md
 |- CHANGELOG.md
 |- LICENSE.txt
