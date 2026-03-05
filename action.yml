@@ -163,21 +163,32 @@ runs:
 
     - name: Copy Build Files
       shell: bash
-      run: |        
-        rm -rf "$DESTINATION"
-        mkdir -p "$DESTINATION"
-        
-        shopt -s nullglob
+      run: |
+        #!/bin/bash
+
         mapfile -t patterns <<< "$FILES"
-        
+
         for pattern in "${patterns[@]}"; do
           [[ -z "$pattern" ]] && continue
-        
-          for file in $pattern; do
+
+          source="$pattern"
+          dest="$DESTINATION"
+
+          # Handle different outputs (A -> B)
+          if [[ "$pattern" == *" -> "* ]]; then
+            source="${pattern% -> *}"
+            dest="$DESTINATION/${pattern#* -> }"
+          fi
+
+          # Copy files
+          mkdir -p "$dest"
+          IFS=$'\n'
+          for file in $source; do
             [[ -f "$file" ]] || continue
-            
-            cp "$file" "$DESTINATION"
+            echo "Copying '$file' to '$dest'"
+            cp "$file" "$dest"
           done
+          unset IFS
         done
       env:
         FILES: ${{ inputs.files }}
