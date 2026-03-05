@@ -1,5 +1,5 @@
 name: 'Upload Package to Thunderstore'
-description: 'Builds, validates, packages and publishes a Thunderstore pacakge'
+description: 'Validates, packages and publishes a Thunderstore pacakge'
 author: 'WarperSan'
 branding:
   icon: 'package'
@@ -51,10 +51,6 @@ inputs:
     required: true
 
   # Options
-  dotnet-configuration:
-    description: 'Build configuration to use when building and testing the package'
-    required: false
-    default: 'Release'
   repository:
     description: 'URL of the hosting server'
     required: false
@@ -141,21 +137,6 @@ runs:
       env:
         DEPENDENCIES: ${{ inputs.dependencies }}
         REPOSITORY: ${{ inputs.repository }}
-
-    ### ---
-    ### Build Package
-    ### ---
-    - name: Build Package
-      shell: bash
-      run: dotnet build --no-restore -c "$CONFIGURATION"
-      env:
-        CONFIGURATION: ${{ inputs.dotnet-configuration }}
-
-    - name: Test Package
-      shell: bash
-      run: dotnet test --no-build --no-restore -c "$CONFIGURATION"
-      env:
-        CONFIGURATION: ${{ inputs.dotnet-configuration }}
 
     ### ---
     ### Prepare Package
