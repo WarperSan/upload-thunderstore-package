@@ -1,5 +1,5 @@
 name: 'Upload Package to Thunderstore'
-description: 'Validates, packages and publishes a Thunderstore pacakge'
+description: 'Validates, packages and publishes a Thunderstore package'
 author: 'WarperSan'
 branding:
   icon: 'package'
