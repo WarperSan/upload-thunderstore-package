@@ -164,8 +164,7 @@ runs:
     - name: Copy Build Files
       shell: bash
       run: |
-        #!/bin/bash
-
+        shopt -s nullglob
         mapfile -t patterns <<< "$FILES"
 
         for pattern in "${patterns[@]}"; do
