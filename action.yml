@@ -93,12 +93,12 @@ runs:
     - name: Validate Categories
       shell: bash
       run: |
-        if [ -n "$CATEGORIES" ]; then
-          mapfile -t categories <<< "$CATEGORIES"
+        [[ -z "$CATEGORIES" ]] && exit 0
 
-          ThunderPipe validate categories "$COMMUNITY" "${categories[@]}" \
-            --host "$HOST"
-        fi
+        readarray -t categories <<< "$CATEGORIES"
+
+        ThunderPipe validate categories "$COMMUNITY" "${categories[@]}" \
+          --host "$HOST"
       env:
         COMMUNITY: ${{ inputs.community }}
         CATEGORIES: ${{ inputs.categories }}
@@ -107,12 +107,12 @@ runs:
     - name: Validate Dependencies
       shell: bash
       run: |
-        if [ -n "$DEPENDENCIES" ]; then
-          mapfile -t dependencies <<< "$DEPENDENCIES"
-          
-          ThunderPipe validate dependencies "${dependencies[@]}" \
+        [[ -z "$DEPENDENCIES" ]] && exit 0
+
+        readarray -t dependencies <<< "$DEPENDENCIES"
+        
+        ThunderPipe validate dependencies "${dependencies[@]}" \
           --host "$HOST"
-        fi
       env:
         DEPENDENCIES: ${{ inputs.dependencies }}
         HOST: ${{ inputs.host }}
@@ -193,7 +193,7 @@ runs:
         fi
         
         if [ -n "$DEPENDENCIES" ]; then
-          mapfile -t dependencies <<< "$DEPENDENCIES"
+          readarray -t dependencies <<< "$DEPENDENCIES"
         
           for dependency in "${dependencies[@]}"; do
             [[ -z "$dependency" ]] && continue
@@ -258,7 +258,7 @@ runs:
         fi
 
         if [ -n "$CATEGORIES" ]; then
-          mapfile -t categories <<< "$CATEGORIES"
+          readarray -t categories <<< "$CATEGORIES"
         
           for category in "${categories[@]}";
           do
